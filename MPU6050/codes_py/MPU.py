@@ -2,7 +2,8 @@
 
 import Constants
 
-from Constants import IMU_SENSITIVITY as IMUS
+from Constants import ACC_SENSITIVITY as ACC_S
+from Constants import GYRO_SENSITIVITY as GYRO_S
 
 from machine import Pin, I2C
 
@@ -24,7 +25,7 @@ class MPU:
             print('i2c devices found:',len(devices))
 
         for device in devices:
-            print("Decimal address: ",device," | Hex address: ",hex(device))
+            print("Decimal address: ",device," | Hexa address: ",hex(device))
         
     def read_acc(self):
         twoscomplement = b'\x80'
@@ -43,7 +44,23 @@ class MPU:
         acc_Z = (int.from_bytes(high_Z, "big") << 8) + int.from_bytes(low_Z, "big")
         acc_Z = -((65535 - acc_Z) + 1) if high_Z > twoscomplement else acc_Z
         
-        return [acc_X/IMUS, acc_Y/IMUS, acc_Z/IMUS]
-
-    def read_att(self): # return [r, p, y]
-        # TODO
+        return [acc_X/ACC_S, acc_Y/ACC_S, acc_Z/ACC_S]
+    
+    def read_gyro(self):
+        twoscomplement = b'\x80'
+        high_X = self.i2c.readfrom_mem(self.i2c_addr, Constants.GYRO_XOUT_H, 1)
+        low_X = self.i2c.readfrom_mem(self.i2c_addr, Constants.GYRO_XOUT_L, 1)
+        gyro_X =( int.from_bytes(high_X,"big") << 8 )+ int.from_bytes(low_X, "big")
+        gyro_X = -((65535 - gyro_X) + 1) if high_X > twoscomplement else gyro_X
+        
+        high_Y = self.i2c.readfrom_mem(self.i2c_addr, Constants.GYRO_YOUT_H, 1)
+        low_Y = self.i2c.readfrom_mem(self.i2c_addr, Constants.GYRO_YOUT_L, 1)
+        gyro_Y = (int.from_bytes(high_Y, "big") << 8 )+ int.from_bytes(low_Y, "big")
+        gyro_Y = -((65535 - gyro_Y) + 1) if high_Y > twoscomplement else gyro_Y
+        
+        high_Z = self.i2c.readfrom_mem(self.i2c_addr, Constants.GYRO_ZOUT_H, 1)
+        low_Z = self.i2c.readfrom_mem(self.i2c_addr, Constants.GYRO_ZOUT_L, 1)
+        gyro_Z = (int.from_bytes(high_Z, "big") << 8) + int.from_bytes(low_Z, "big")
+        gyro_Z = -((65535 - gyro_Z) + 1) if high_Z > twoscomplement else gyro_Z
+        
+        return [gyro_X/GYRO_S, gyro_Y/GYRO_S, gyro_Z/GYRO_S]
