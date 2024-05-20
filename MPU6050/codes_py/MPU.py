@@ -44,3 +44,6 @@ class MPU:
         acc_Z = -((65535 - acc_Z) + 1) if high_Z > twoscomplement else acc_Z
         
         return [acc_X/IMUS, acc_Y/IMUS, acc_Z/IMUS]
+
+    def read_att(self): # return [r, p, y]
+        # TODO
