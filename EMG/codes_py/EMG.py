@@ -1,9 +1,13 @@
-from machine import Pin, ADC
+# from machine import Pin, ADC
+import RPi.GPIO as GPIO
+import smbus
 import time
 
 class EMG:
   def __init__(self, pin_adc):
-    self.adc_pin = Pin(pin_adc, mode=Pin.IN)
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(pin_adc, GPIO.IN)
+    # self.adc_pin = Pin(pin_adc, mode=Pin.IN)
     self.adc = ADC(self.adc_pin)
     self.offset = 0
 

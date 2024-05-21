@@ -1,4 +1,6 @@
-from machine import Pin, ADC
+# from machine import Pin, ADC
+import RPi.GPIO as GPIO
+import smbus
 import time
 import numpy as np
 from MPU6050.codes_py import MPU

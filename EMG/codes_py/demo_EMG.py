@@ -1,4 +1,4 @@
-from machine import Pin, ADC
+# from machine import Pin, ADC
 import time
 from EMG.codes_py.EMG import EMG
         
