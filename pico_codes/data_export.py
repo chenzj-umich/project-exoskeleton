@@ -3,7 +3,6 @@ import utime
 import numpy as np
 from MPU6050.codes_py import MPU
 from EMG.codes_py import EMG
-import MPU6050.codes_py.constants as Constants
 
 # Ports Declaration
 PORT_EMG_BI = 26
@@ -19,8 +18,9 @@ if __name__ == "__main__":
   emg_tri = EMG(PORT_EMG_TRI)
 
   # initialize MPUs
-  mpu_1 = MPU(0, Constants.I2C_ADDR) # lower arm
-  mpu_2 = MPU(0, Constants.I2C_ADDR_ALT) # upper arm
+  # TODO
+  mpu_1 = MPU(0, I2C_ADDR) # lower arm
+  mpu_2 = MPU(0, I2C_ADDR_ALT) # upper arm
 
   
   try:
@@ -28,6 +28,11 @@ if __name__ == "__main__":
     emg_bi.calibrate()
     emg_tri.calibrate()
     print("EMG calibration done\n")
+
+    # MPU calibration
+    mpu_1.calibrate()
+    mpu_2.calibrate()
+    print("MPU calibration done\n")
 
     # first-loop run
     att_1 = np.array(mpu_1.read_att())
