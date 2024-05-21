@@ -1,5 +1,5 @@
 from machine import Pin, ADC
-import utime
+import time
 import numpy as np
 from MPU6050.codes_py import MPU
 from EMG.codes_py import EMG
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     
     while True:
       # starting time
-      start_time = utime.ticks_ms()
+      start_time = time.ticks_ms()
 
       # read EMG
       volt_bi = emg_bi.read()
@@ -64,8 +64,8 @@ if __name__ == "__main__":
 
       # delay
       sampling_period = 100
-      time_spent = utime.ticks_diff(utime.ticks_ms(), start_time)
-      utime.sleep_ms(max(0, sampling_period - time_spent))
+      time_spent = time.ticks_diff(time.ticks_ms(), start_time)
+      time.sleep_ms(max(0, sampling_period - time_spent))
         
   except KeyboardInterrupt:
     print('ctrl+c pressed')

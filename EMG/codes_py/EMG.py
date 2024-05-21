@@ -1,5 +1,5 @@
 from machine import Pin, ADC
-import utime
+import time
 
 class EMG:
   def __init__(self, pin_adc):
@@ -13,10 +13,10 @@ class EMG:
   
   def calibrate(self):
     print("EMG calibrating...")
-    start = utime.ticks_ms()
+    start = time.time()
     total = 0
     count = 0
-    while utime.ticks_diff(utime.ticks_ms(), start) / 1000 < 1:
+    while time.time() - start < 1:
       total += self.adc.read_u16() * 3.3 / 65535
       count += 1
     self.offset = total / count

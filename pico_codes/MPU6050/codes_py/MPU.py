@@ -1,6 +1,6 @@
 #functions for MPU6050
 
-import utime
+import time
 from machine import Pin, I2C
 
 import MPU6050.codes_py.constants as Constants
@@ -73,11 +73,11 @@ class MPU:
     
     def calibrate(self):
         print("MPU calibrating...")
-        start = utime.ticks_ms()
+        start = time.ticks_ms()
         total_acc = [0, 0, 0]
         total_att = [0, 0, 0]
         count = 0
-        while utime.ticks_diff(utime.ticks_ms(), start) / 1000 < 1:
+        while time.ticks_diff(time.ticks_ms(), start) / 1000 < 1:
             total_acc = list_add(total_acc, self.read_acc())
             total_att = list_add(total_att, self.read_att())
             count += 1

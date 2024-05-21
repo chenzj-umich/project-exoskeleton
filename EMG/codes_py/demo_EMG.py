@@ -1,5 +1,5 @@
 from machine import Pin, ADC
-import utime
+import time
 from EMG.codes_py.EMG import EMG
         
 if __name__ == "__main__":
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     print("initialization done\n")
     
     while True:
-      start_time = utime.ticks_ms()
+      start_time = time.clock()
       
       volt_bi = emg_bi.read()
       volt_tri = emg_tri.read()
@@ -24,9 +24,9 @@ if __name__ == "__main__":
       volt_ratio = volt_bi / volt_tri
       #print(f"EMA_bi: {round(volt_bi, 4)} EMA_tri: {round(volt_tri, 4)}")
       print(f"voltage ratio: {volt_ratio}")
-      sampling_period = 100
-      time_spent = utime.ticks_diff(utime.ticks_ms(), start_time)
-      utime.sleep_ms(max(0, sampling_period - time_spent))
+      sampling_period = 0.1
+      time_spent = time.time() - start_time
+      time.sleep_ms(max(0, sampling_period - time_spent))
         
         
   except KeyboardInterrupt:
