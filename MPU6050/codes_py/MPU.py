@@ -13,16 +13,6 @@ from utility import modify_constants
 from math_algo import list_div, list_add, list_sub
 
 class MPU:
-    def __init__(self, i2c_bus:int, i2c_addr:int):
-        SDA = Pin(0) if not i2c_bus else Pin(3)
-        SCL = Pin(1) if not i2c_bus else Pin(4)
-        self.i2c = I2C(i2c_bus, scl = SCL, sda = SDA, freq = 400_000)
-        self.i2c_addr = i2c_addr
-        self.i2c.writeto_mem(i2c_addr, 0x6b, bytes(1))
-        self.calibrate()
-        self.offset_acc = Constants.OFFSET_ACC
-        self.offset_att = Constants.OFFSET_ATT
-
     def __init__(self, i2c_bus: int, i2c_addr: int):
         # Setup GPIO Pins for SDA and SCL with gpiozero if necessary
         # Note: This is typically not needed as the Pi has dedicated I2C pins and handles them with the smbus library directly
