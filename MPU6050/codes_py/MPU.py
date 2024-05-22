@@ -13,7 +13,7 @@ from utility import modify_constants
 from math_algo import list_div, list_add, list_sub
 
 class MPU:
-    def __init__(self, i2c_bus: int, i2c_addr: int):
+    def __init__(self, i2c_bus: int, i2c_addr: int, id):
         # Setup GPIO Pins for SDA and SCL with gpiozero if necessary
         # Note: This is typically not needed as the Pi has dedicated I2C pins and handles them with the smbus library directly
         SDA = 27 if not i2c_bus else 3  # Update these pin numbers based on your specific configuration
@@ -28,33 +28,32 @@ class MPU:
         # Perform calibration if necessary
         self.calibrate()
         # Set offsets from Constants
-        self.offset_acc = OFFSET_ACC
-        self.offset_att = OFFSET_ATT
+        self.offset_acc = Constants.OFFSET_ACC
+        self.offset_att = Constants.OFFSET_ATT
+        # Set the MPU id (1, 2, 3...)
+        self.id = id
         
     def scan(self):
         print('Scan I2C bus...')
         # I2C addresses are usually between 0x03 and 0x77
-        possible_addresses = range(0x03, 0x78)  # Excluding reserved addresses
+        possible_addresses = self.i2c_addr  # Excluding reserved addresses
         found_devices = []
 
-        for address in possible_addresses:
-            try:
-                # Attempt to write a quick command to the address
-                # This method can throw an IOError if the device is not present
-                self.bus.write_quick(address)
-                # If no error, append the device address to the list
-                found_devices.append(address)
-            except IOError:
-                # No device at this address
-                continue
-
-        if not found_devices:
-            print("No I2C devices found!")
-        else:
-            print('I2C devices found:', len(found_devices))
-            for device in found_devices:
-                print("Decimal address:", device, " | Hexa address:", hex(device))
-
+        try:
+            # Attempt to write a quick command to the address
+            # This method can throw an IOError if the device is not present
+            self.bus.write_quick(possible_addresses)
+            # If no error, append the device address to the list
+            found_devices.append(possible_addresses)
+            if not found_devices:
+                print(f"MPU {self.id} not found!")
+            else:
+                # TODO: output for a single MPU instead of all
+                print(f"MPU {self.id} found: Decimal address:", device, " | Hexa address:", hex(device)"")
+        except IOError:
+            # No device at this address
+            print("IO Error!")
+        
         
     def read_acc(self):
         twoscomplement = b'\0x80'
@@ -97,6 +96,7 @@ class MPU:
         return [gyro_X/GYRO_S, gyro_Y/GYRO_S, gyro_Z/GYRO_S]
     
     def calibrate(self):
+        # TODO: convert the output type
         print("MPU calibrating...")
         start = time.ticks_ms()
         total_acc = [0, 0, 0]

@@ -1,4 +1,5 @@
-from ulab import numpy as np
+# from ulab import numpy as np
+import numpy as np
 
 class Mat:
   def add(A, B):
