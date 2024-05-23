@@ -4,13 +4,14 @@ import time
 # from machine import Pin, I2C
 import RPi.GPIO as GPIO
 import smbus
+import numpy as np
 
 import MPU6050.codes_py.constants as Constants
 from MPU6050.codes_py.constants import ACC_SENSITIVITY as ACC_S
 from MPU6050.codes_py.constants import GYRO_SENSITIVITY as GYRO_S
-from utility import modify_constants
+# from utility import modify_constants
 
-from math_algo import list_div, list_add, list_sub
+# from math_algo import list_div, list_add, list_sub
 
 class MPU:
     def __init__(self, i2c_bus: int, i2c_addr: int, id):
@@ -25,6 +26,9 @@ class MPU:
         # Write to the device's register to initialize it
         # The register address 0x6b needs to be initialized to 0 (for example)
         self.bus.write_byte_data(self.i2c_addr, 0x6b, 0) # TODO: 0 or 1?
+        # Name of the constants of MPU for the current MPU device
+        self.name_acc = "OFFSET_ACC_" + str(self.id)
+        self.name_att = "OFFSET_ATT_" + str(self.id)
         # Perform calibration if necessary
         self.calibrate()
         # Set offsets from Constants
@@ -48,8 +52,7 @@ class MPU:
             if not found_devices:
                 print(f"MPU {self.id} not found!")
             else:
-                # TODO: output for a single MPU instead of all
-                print(f"MPU {self.id} found: Decimal address:", device, " | Hexa address:", hex(device)"")
+                print(f"MPU {self.id} found: Decimal address: {self.i2c_addr} | Hexa address: {hex(self.i2c_addr)}")
         except IOError:
             # No device at this address
             print("IO Error!")
@@ -73,7 +76,7 @@ class MPU:
         acc_Z = (high_Z << 8) | low_Z
         acc_Z = -((65535 - acc_Z) + 1) if high_Z > twoscomplement else acc_Z
 
-        return [acc_X / ACC_S, acc_Y / ACC_S, acc_Z / ACC_S]
+        return [acc_X / ACC_S, acc_Y / ACC_S, acc_Z / ACC_S] # m/sec^2
     
     def read_att(self):
         twoscomplement = b'\x80'
@@ -90,25 +93,60 @@ class MPU:
         
         high_Z = self.bus.read_byte_data(self.i2c_addr, Constants.GYRO_ZOUT_H)
         low_Z = self.bus.read_byte_data(self.i2c_addr, Constants.GYRO_ZOUT_L)
-        gyro_Z = (high_Z<< 8) | low_Z
+        gyro_Z = (high_Z << 8) | low_Z
         gyro_Z = -((65535 - gyro_Z) + 1) if high_Z > twoscomplement else gyro_Z
         
-        return [gyro_X/GYRO_S, gyro_Y/GYRO_S, gyro_Z/GYRO_S]
+        return [gyro_X/GYRO_S, gyro_Y/GYRO_S, gyro_Z/GYRO_S] # deg/sec
     
     def calibrate(self):
-        # TODO: convert the output type
-        print("MPU calibrating...")
-        start = time.ticks_ms()
-        total_acc = [0, 0, 0]
-        total_att = [0, 0, 0]
-        count = 0
-        while time.time() - start < 1:
-            total_acc = list_add(total_acc, self.read_acc())
-            total_att = list_add(total_att, self.read_att())
-            count += 1
-        offset_acc = list_div(total_acc, count)
-        offset_acc[2] += -1
-        offset_att = list_div(total_att, count)
-        # modify the constants
-        modify_constants("MPU6050/codes_py/constants.py", "OFFSET_ACC", offset_acc)
-        modify_constants("MPU6050/codes_py/constants.py", "OFFSET_ATT", offset_att)
+        # # TODO: convert the output type
+        # print("MPU calibrating...")
+        # start = time.ticks_ms()
+        # total_acc = np.array([0, 0, 0])
+        # total_att = np.array([0, 0, 0])
+        # count = 0
+        # while time.time() - start < 1:
+        #     total_acc += self.read_acc()
+        #     total_att += self.read_att()
+        #     count += 1
+        # offset_acc = total_acc / count
+        # offset_att = total_att / count
+        # offset_acc_list = offset_acc.tolist()
+        # offset_att_list = offset_att.tolist()
+        # offset_acc[2] += -1
+        # # modify the constants
+        # modify_constants("MPU6050/codes_py/constants.py", "OFFSET_ACC", offset_acc)
+        # modify_constants("MPU6050/codes_py/constants.py", "OFFSET_ATT", offset_att)
+
+
+        found_acc = False
+        found_att = False
+        with open("MPU6050/codes_py/constants.py", 'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                if line.strip().startswith(self.name_acc):
+                    found_acc = True
+                if line.strip().startswith(self.name_att):
+                    found_att = True
+        if (not found_acc) or (not found_att):
+            print("MPU calibrating...")
+            with open("MPU6050/codes_py/constants.py", 'w') as file:
+                start = time.ticks_ms()
+                total_acc = np.array([0, 0, 0])
+                total_att = np.array([0, 0, 0])
+                count = 0
+                while time.time() - start < 1:
+                    total_acc += self.read_acc()
+                    total_att += self.read_att()
+                    count += 1
+                offset_acc = total_acc / count
+                offset_att = total_att / count
+                offset_acc_list = offset_acc.tolist()
+                offset_att_list = offset_att.tolist()
+                offset_acc[2] += -1
+                lines.append(f"{name_acc} = {offset_acc_list}\n")
+                lines.append(f"{name_att} = {offset_att_list}\n\n")
+                file.writelines(lines)
+            print("MPU calibrated.")
+        else:
+            print("MPU has already been calibrated.")

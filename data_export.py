@@ -19,44 +19,55 @@ if __name__ == "__main__":
   # initialize EMGs
   emg_bi = EMG(PORT_EMG_BI)
   emg_tri = EMG(PORT_EMG_TRI)
+  emgs = [emg_bi, emg_tri]
 
   # initialize MPUs
-  mpu_1 = MPU(0, Constants.I2C_ADDR) # lower arm
-  mpu_2 = MPU(0, Constants.I2C_ADDR_ALT) # upper arm
-
+  mpu_1 = MPU(0, Constants.I2C_ADDR, 1) # lower arm
+  mpu_2 = MPU(0, Constants.I2C_ADDR_ALT, 2) # upper arm
+  mpus = [mpu_1, mpu_2]
   
   try:
     # EMG calibration
-    emg_bi.calibrate()
-    emg_tri.calibrate()
-    print("EMG calibration done\n")
+    for i in range(len(emgs)):
+      print(f"EMG calibrating...{i+1}/{len(emgs)}")
+      emgs[i].calibrate()
+    print("EMG calibrated.\n\n")
 
-    # first-loop run
-    att_1 = np.array(mpu_1.read_att())
-    att_2 = np.array(mpu_2.read_att())
+    accs = []
+    atts = []
+    volts = []
+
+    # # first-loop run
+    # att_1 = np.array(mpu_1.read_att())
+    # att_2 = np.array(mpu_2.read_att())
+    # for mpu in mpus:
+    #   # accs.append(np.array(mpu.reat_acc()))
+    #   atts.append(np.array(mpu.read_att()))
     
     while True:
       # starting time
       start_time = time.time()
 
       # read EMG
-      volt_bi = emg_bi.read()
-      volt_tri = emg_tri.read()
-      volt_diff = volt_bi - volt_tri
-      #print(f"EMA_bi: {round(volt_bi, 4)} EMA_tri: {round(volt_tri, 4)}")
+      for emg in emgs:
+        volts.append(emg.read())
+      # volt_diff = volt_bi - volt_tri
 
-      # update MPU data
-      att_1_prev = att_1
-      att_2_prev = att_2
+      # # update MPU data
+      # accs_prev = accs
+      # atts_prev = atts
 
       # read MPU
-      att_1 = np.array(mpu_1.read_att())
-      att_2 = np.array(mpu_2.read_att())
+      accs.clear()
+      atts.clear()
+      for mpu in mpus:
+        # accs.append(np.array(mpu.reat_acc()))
+        atts.append(np.array(mpu.read_att()))
 
-      # elbow angle calculation
-      del_att_1 = att_1 - att_1_prev
-      del_att_2 = att_2 - att_2_prev
-      del_phi_rpy = del_att_2 - del_att_1 # in [r,p,y] form
+      # # elbow angle calculation
+      # del_att_1 = att_1 - att_1_prev
+      # del_att_2 = att_2 - att_2_prev
+      # del_phi_rpy = del_att_2 - del_att_1 # in [r,p,y] form
 
 
       # delay
