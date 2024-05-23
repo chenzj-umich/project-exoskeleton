@@ -8,7 +8,7 @@ class EMG:
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(pin_adc, GPIO.IN)
     # self.adc_pin = Pin(pin_adc, mode=Pin.IN)
-    self.adc = ADC(self.adc_pin)
+    self.adc = ADC(self.adc_pin) # TODO
     self.offset = 0
 
   def read(self):

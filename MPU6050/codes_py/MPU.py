@@ -57,7 +57,7 @@ class MPU:
             # No device at this address
             print("IO Error!")
         
-        
+    # TODO: read() need buffer to hold all data
     def read_acc(self):
         twoscomplement = b'\0x80'
     
@@ -99,26 +99,6 @@ class MPU:
         return [gyro_X/GYRO_S, gyro_Y/GYRO_S, gyro_Z/GYRO_S] # deg/sec
     
     def calibrate(self):
-        # # TODO: convert the output type
-        # print("MPU calibrating...")
-        # start = time.ticks_ms()
-        # total_acc = np.array([0, 0, 0])
-        # total_att = np.array([0, 0, 0])
-        # count = 0
-        # while time.time() - start < 1:
-        #     total_acc += self.read_acc()
-        #     total_att += self.read_att()
-        #     count += 1
-        # offset_acc = total_acc / count
-        # offset_att = total_att / count
-        # offset_acc_list = offset_acc.tolist()
-        # offset_att_list = offset_att.tolist()
-        # offset_acc[2] += -1
-        # # modify the constants
-        # modify_constants("MPU6050/codes_py/constants.py", "OFFSET_ACC", offset_acc)
-        # modify_constants("MPU6050/codes_py/constants.py", "OFFSET_ATT", offset_att)
-
-
         found_acc = False
         found_att = False
         with open("MPU6050/codes_py/constants.py", 'r') as file:
@@ -136,16 +116,16 @@ class MPU:
                 total_att = np.array([0, 0, 0])
                 count = 0
                 while time.time() - start < 1:
-                    total_acc += self.read_acc()
-                    total_att += self.read_att()
+                    total_acc += np.array(self.read_acc())
+                    total_att += np.array(self.read_att())
                     count += 1
                 offset_acc = total_acc / count
                 offset_att = total_att / count
                 offset_acc_list = offset_acc.tolist()
                 offset_att_list = offset_att.tolist()
                 offset_acc[2] += -1
-                lines.append(f"{name_acc} = {offset_acc_list}\n")
-                lines.append(f"{name_att} = {offset_att_list}\n\n")
+                lines.append(f"{self.name_acc} = {offset_acc_list}\n")
+                lines.append(f"{self.name_att} = {offset_att_list}\n\n")
                 file.writelines(lines)
             print("MPU calibrated.")
         else:

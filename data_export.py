@@ -6,6 +6,7 @@ import numpy as np
 from MPU6050.codes_py import MPU
 from EMG.codes_py import EMG
 import MPU6050.codes_py.constants as Constants
+from math_algo import rotation_matrix
 
 # Ports Declaration
 PORT_EMG_BI = 26
@@ -35,7 +36,11 @@ if __name__ == "__main__":
 
     accs = []
     atts = []
+    ang_vs = []
     volts = []
+
+    # TODO:
+    # zero_position() for MPUs to set atts
 
     # # first-loop run
     # att_1 = np.array(mpu_1.read_att())
@@ -43,11 +48,11 @@ if __name__ == "__main__":
     # for mpu in mpus:
     #   # accs.append(np.array(mpu.reat_acc()))
     #   atts.append(np.array(mpu.read_att()))
-    
-    while True:
-      # starting time
-      start_time = time.time()
 
+    # starting time
+    start_time = time.time()
+
+    while True:
       # read EMG
       for emg in emgs:
         volts.append(emg.read())
@@ -59,20 +64,28 @@ if __name__ == "__main__":
 
       # read MPU
       accs.clear()
-      atts.clear()
+      ang_vs.clear()
       for mpu in mpus:
         # accs.append(np.array(mpu.reat_acc()))
-        atts.append(np.array(mpu.read_att()))
+        ang_vs.append(np.array(mpu.read_att()))
 
-      # # elbow angle calculation
-      # del_att_1 = att_1 - att_1_prev
-      # del_att_2 = att_2 - att_2_prev
-      # del_phi_rpy = del_att_2 - del_att_1 # in [r,p,y] form
+      # inteval time
+      curr_time = time.time()
+      time_spent = curr_time - start_time
+      start_time = curr_time
+
+      # delta angles calculation
+      for i in range(len(ang_vs)):
+        del_att = rotation_matrix('world', ang_vs[i]) * time_spent
+        # atts[i] += del_att
+        # TODO: using matrix to update attitude: self.curr_att *= del_att
+
+
+      # TODO: elbow angle calculation from rotation matrix
 
 
       # delay
-      sampling_period = 0.1
-      time_spent = time.time() - start_time
+      sampling_period = 1 / Constants.SAMPLING_FREQUENCY
       time.sleep(max(0, sampling_period - time_spent))
         
   except KeyboardInterrupt:

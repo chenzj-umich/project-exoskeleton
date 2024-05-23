@@ -23,35 +23,38 @@ class Mat:
 # axis: r(x), p(y), y(z)
 def rotation_matrix(axis, angle_radians):
     cos_theta, sin_theta = np.cos(angle_radians), np.sin(angle_radians)
-    if axis == 'r':
+    if axis == 'x':
         return np.array([
             [1, 0, 0],
             [0, cos_theta[0], -sin_theta[0]],
             [0, sin_theta[0], cos_theta[0]]
         ])
-    elif axis == 'p':
+    elif axis == 'y':
         return np.array([
             [cos_theta[1], 0, sin_theta[1]],
             [0, 1, 0],
             [-sin_theta[1], 0, cos_theta[1]]
         ])
-    elif axis == 'y':
+    elif axis == 'z' :
         return np.array([
             [cos_theta[2], -sin_theta[2], 0],
             [sin_theta[2], cos_theta[2], 0],
             [0, 0, 1]
         ])
-    elif axis is None:
+    elif axis == 'world': # world-fixed frame, roll-pitch-yaw angles
         # TODO:
-        Rr = rotation_matrix('r', angle_radians)
-        Rp = rotation_matrix('p', angle_radians)
+        Rx = rotation_matrix('x', angle_radians)
         Ry = rotation_matrix('y', angle_radians)
-        # res = np.dot(Ry, Rp)
-        # res = np.dot(Rr, res)
-        # return res
-        return np.dot(np.dot(Ry, Rp), Rr)
+        Rz = rotation_matrix('z', angle_radians)
+        return np.dot(Rz, np.dot(Ry, Rx))
+    elif axis == 'body': # body-fixed frame, Euler angles
+        # TODO:
+        Rx = rotation_matrix('x', angle_radians)
+        Ry = rotation_matrix('y', angle_radians)
+        Rz = rotation_matrix('z', angle_radians)
+        return np.dot(Rx, np.dot(Ry, Rz))
     else:
-        raise ValueError("Axis must be 'r', 'p', or 'y'")
+        raise ValueError("Axis must be 'x', 'y', 'z', 'space', or 'body")
 
 # def overriding operator for list
 def list_div(self, divisor):
