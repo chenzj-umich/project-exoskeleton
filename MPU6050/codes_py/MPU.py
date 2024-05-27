@@ -36,6 +36,8 @@ class MPU:
         self.offset_att = Constants.OFFSET_ATT
         # Set the MPU id (1, 2, 3...)
         self.id = id
+        # Set the attitude relative to world-fixed frame in a rotation matrix
+        self.att_mat = np.array([0,0,0],[0,0,0],[0,0,0])
         
     def scan(self):
         print('Scan I2C bus...')
