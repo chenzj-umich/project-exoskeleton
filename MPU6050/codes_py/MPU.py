@@ -1,4 +1,7 @@
 #functions for MPU6050
+import os, sys
+curr_dir = os.getcwd()
+sys.path.insert(0, curr_dir)
 
 import time
 # from machine import Pin, I2C
@@ -23,6 +26,10 @@ class MPU:
         self.bus = smbus.SMBus(i2c_bus)
         # I2C device address
         self.i2c_addr = i2c_addr
+        # Set the MPU id (1, 2, 3...)
+        self.id = id
+        # Scan the bus
+        self.scan()
         # Write to the device's register to initialize it
         # The register address 0x6b needs to be initialized to 0 (for example)
         self.bus.write_byte_data(self.i2c_addr, 0x6b, 0) # TODO: 0 or 1?
@@ -31,13 +38,8 @@ class MPU:
         self.name_att = "OFFSET_ATT_" + str(self.id)
         # Perform calibration if necessary
         self.calibrate()
-        # Set offsets from Constants
-        self.offset_acc = Constants.OFFSET_ACC
-        self.offset_att = Constants.OFFSET_ATT
-        # Set the MPU id (1, 2, 3...)
-        self.id = id
         # Set the attitude relative to world-fixed frame in a rotation matrix
-        self.att_mat = np.array([0,0,0],[0,0,0],[0,0,0])
+        self.att_mat = np.array([[0,0,0],[0,0,0],[0,0,0]])
         
     def scan(self):
         print('Scan I2C bus...')
@@ -61,7 +63,8 @@ class MPU:
         
     # TODO: read() need buffer to hold all data
     def read_acc(self):
-        twoscomplement = b'\0x80'
+#         twoscomplement = b'\0x80'
+        twoscomplement = 128
     
         high_X = self.bus.read_byte_data(self.i2c_addr, Constants.ACCEL_XOUT_H)
         low_X = self.bus.read_byte_data(self.i2c_addr, Constants.ACCEL_XOUT_L)
@@ -81,7 +84,8 @@ class MPU:
         return [acc_X / ACC_S, acc_Y / ACC_S, acc_Z / ACC_S] # m/sec^2
     
     def read_att(self):
-        twoscomplement = b'\x80'
+#         twoscomplement = b'\x80'
+        twoscomplement = 128
 
         high_X = self.bus.read_byte_data(self.i2c_addr, Constants.GYRO_XOUT_H)
         low_X = self.bus.read_byte_data(self.i2c_addr, Constants.GYRO_XOUT_L)
@@ -113,9 +117,9 @@ class MPU:
         if (not found_acc) or (not found_att):
             print("MPU calibrating...")
             with open("MPU6050/codes_py/constants.py", 'w') as file:
-                start = time.ticks_ms()
-                total_acc = np.array([0, 0, 0])
-                total_att = np.array([0, 0, 0])
+                start = time.time()
+                total_acc = np.array([0.0, 0.0, 0.0])
+                total_att = np.array([0.0, 0.0, 0.0])
                 count = 0
                 while time.time() - start < 1:
                     total_acc += np.array(self.read_acc())
@@ -125,10 +129,17 @@ class MPU:
                 offset_att = total_att / count
                 offset_acc_list = offset_acc.tolist()
                 offset_att_list = offset_att.tolist()
-                offset_acc[2] += -1
+                offset_acc_list[2] += -1
+                # set offsets directly
+                self.offset_acc = offset_acc_list
+                self.offset_att = offset_att_list
+                # record the offsets in constants.py
                 lines.append(f"{self.name_acc} = {offset_acc_list}\n")
                 lines.append(f"{self.name_att} = {offset_att_list}\n\n")
                 file.writelines(lines)
             print("MPU calibrated.")
         else:
+            # Set offsets from Constants
+            self.offset_acc = getattr(Constants, self.name_acc, None)
+            self.offset_att = getattr(Constants, self.name_att, None)
             print("MPU has already been calibrated.")
