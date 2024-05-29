@@ -154,6 +154,7 @@ class MPU:
             dt = curr_time - start_time
             start_time = curr_time
             if dt < 0.05:
+                print("dt < 50 ms")
                 continue
             acc_list = self.read_acc()
             ang_v_list = self.read_ang_v()
