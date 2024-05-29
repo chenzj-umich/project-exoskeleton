@@ -43,11 +43,11 @@ if __name__ == "__main__":
     # zero_position() for MPUs to set atts
 
     # # first-loop run
-    # att_1 = np.array(mpu_1.read_att())
-    # att_2 = np.array(mpu_2.read_att())
+    # att_1 = np.array(mpu_1.read_ang_v())
+    # att_2 = np.array(mpu_2.read_ang_v())
     # for mpu in mpus:
     #   # accs.append(np.array(mpu.reat_acc()))
-    #   atts.append(np.array(mpu.read_att()))
+    #   atts.append(np.array(mpu.read_ang_v()))
 
     # starting time
     start_time = time.time()
@@ -67,7 +67,7 @@ if __name__ == "__main__":
       ang_vs.clear()
       for mpu in mpus:
         # accs.append(np.array(mpu.reat_acc()))
-        ang_vs.append(np.array(mpu.read_att()))
+        ang_vs.append(np.array(mpu.read_ang_v()))
 
       # inteval time
       curr_time = time.time()

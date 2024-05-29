@@ -52,7 +52,7 @@ class MPU:
         
         return [acc_X/ACC_S, acc_Y/ACC_S, acc_Z/ACC_S]
     
-    def read_att(self):
+    def read_ang_v(self):
         twoscomplement = b'\x80'
         high_X = self.i2c.readfrom_mem(self.i2c_addr, Constants.GYRO_XOUT_H, 1)
         low_X = self.i2c.readfrom_mem(self.i2c_addr, Constants.GYRO_XOUT_L, 1)
@@ -79,7 +79,7 @@ class MPU:
         count = 0
         while time.ticks_diff(time.ticks_ms(), start) / 1000 < 1:
             total_acc = list_add(total_acc, self.read_acc())
-            total_att = list_add(total_att, self.read_att())
+            total_att = list_add(total_att, self.read_ang_v())
             count += 1
         offset_acc = list_div(total_acc, count)
         offset_acc[2] += -1

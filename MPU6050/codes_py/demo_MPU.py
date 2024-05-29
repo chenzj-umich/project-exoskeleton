@@ -13,17 +13,17 @@ mpu1 = MPU(1, I2C_ADDR, 1)
 # import MPU6050.codes_py.constants as Constant
 
 print(mpu1.offset_acc)
-# print(mpu6050.read_acc(), mpu6050.read_att())
+# print(mpu6050.read_acc(), mpu6050.read_ang_v())
 
 print("MPU calibration done\n")
 
-while True:
-    time.sleep(50/1000)
-    if mpu1.offset_acc is not None:
-        acc = (np.array(mpu1.read_acc()) - np.array(mpu1.offset_acc)).tolist()
-        att = (np.array(mpu1.read_att()) - np.array(mpu1.offset_att)).tolist()
-        print([round(num,2) for num in acc], [round(num,2) for num in att])
-    else:
-        print("offsets None.")
-#     print(acc, att)
-#     print(list_sub(mpu6050.read_acc(), mpu6050.offset_acc), list_sub(mpu6050.read_att(), mpu6050.offset_att))
+# while True:
+#     time.sleep(50/1000)
+#     if mpu1.offset_acc is not None:
+#         acc = (np.array(mpu1.read_acc()) - np.array(mpu1.offset_acc)).tolist()
+#         att = (np.array(mpu1.read_ang_v()) - np.array(mpu1.offset_att)).tolist()
+#         print([round(num,2) for num in acc], [round(num,2) for num in att])
+#     else:
+#         print("offsets None.")
+
+mpu1.demo_get_displacement_attitude()

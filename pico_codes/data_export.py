@@ -35,8 +35,8 @@ if __name__ == "__main__":
     print("MPU calibration done\n")
 
     # first-loop run
-    att_1 = np.array(mpu_1.read_att())
-    att_2 = np.array(mpu_2.read_att())
+    att_1 = np.array(mpu_1.read_ang_v())
+    att_2 = np.array(mpu_2.read_ang_v())
     
     while True:
       # starting time
@@ -53,8 +53,8 @@ if __name__ == "__main__":
       att_2_prev = att_2
 
       # read MPU
-      att_1 = np.array(mpu_1.read_att())
-      att_2 = np.array(mpu_2.read_att())
+      att_1 = np.array(mpu_1.read_ang_v())
+      att_2 = np.array(mpu_2.read_ang_v())
 
       # elbow angle calculation
       del_att_1 = att_1 - att_1_prev

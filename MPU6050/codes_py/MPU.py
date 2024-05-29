@@ -40,6 +40,9 @@ class MPU:
         self.calibrate()
         # Set the attitude relative to world-fixed frame in a rotation matrix
         self.att_mat = np.array([[0,0,0],[0,0,0],[0,0,0]])
+        # Set the cumulative displacement & angle
+        self.displacement = [0, 0, 0]
+        self.attitude = [1, 0, 0, 0]
         
     def scan(self):
         print('Scan I2C bus...')
@@ -83,7 +86,7 @@ class MPU:
 
         return [acc_X / ACC_S, acc_Y / ACC_S, acc_Z / ACC_S] # m/sec^2
     
-    def read_att(self):
+    def read_ang_v(self):
 #         twoscomplement = b'\x80'
         twoscomplement = 128
 
@@ -123,7 +126,7 @@ class MPU:
                 count = 0
                 while time.time() - start < 1:
                     total_acc += np.array(self.read_acc())
-                    total_att += np.array(self.read_att())
+                    total_att += np.array(self.read_ang_v())
                     count += 1
                 offset_acc = total_acc / count
                 offset_att = total_att / count
@@ -143,3 +146,24 @@ class MPU:
             self.offset_acc = getattr(Constants, self.name_acc, None)
             self.offset_att = getattr(Constants, self.name_att, None)
             print("MPU has already been calibrated.")
+
+    def demo_get_displacement_attitude(self):
+        start_time = time.time()
+        while True:
+            curr_time = time.time()
+            dt = curr_time - start_time
+            start_time = curr_time
+            if dt < 0.05:
+                continue
+            acc_list = self.read_acc()
+            ang_v_list = self.read_ang_v()
+            acc = np.array(acc_list)
+            ang_v = np.array(ang_v_list)
+
+            displacement = np.array(self.displacement)
+            displacement += acc * dt
+            self.displacement = displacement.tolist()
+            attitude = np.array(self.attitude)
+            attitude += ang_v * dt
+            self.attitude = attitude.tolist()
+            print(self.displacement,self.attitude)
