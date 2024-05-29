@@ -167,3 +167,6 @@ class MPU:
             attitude += ang_v * dt
             self.attitude = attitude.tolist()
             print(f"[d,a] = {self.displacement},{self.attitude}")
+
+            sampling_period = 1 / Constants.SAMPLING_FREQUENCY
+            time.sleep(max(0, sampling_period - dt))
