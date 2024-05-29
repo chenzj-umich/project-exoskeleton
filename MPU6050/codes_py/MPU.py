@@ -166,4 +166,4 @@ class MPU:
             attitude = np.array(self.attitude)
             attitude += ang_v * dt
             self.attitude = attitude.tolist()
-            print(self.displacement,self.attitude)
+            print(f"[d,a] = {self.displacement},{self.attitude}")
