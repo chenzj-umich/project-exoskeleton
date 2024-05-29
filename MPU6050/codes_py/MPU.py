@@ -102,7 +102,7 @@ class MPU:
         gyro_Z = (high_Z << 8) | low_Z
         gyro_Z = -((65535 - gyro_Z) + 1) if high_Z > twoscomplement else gyro_Z
         
-        return [gyro_X/GYRO_S, gyro_Y/GYRO_S, gyro_Z/GYRO_S] # deg/sec
+        return [np.radians(gyro_X/GYRO_S), np.radians(gyro_Y/GYRO_S), np.radians(gyro_Z/GYRO_S)] # deg/sec
     
     def calibrate(self):
         found_acc = False
