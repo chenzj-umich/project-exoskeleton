@@ -41,8 +41,9 @@ class MPU:
         # Set the attitude relative to world-fixed frame in a rotation matrix
         self.att_mat = np.array([[0,0,0],[0,0,0],[0,0,0]])
         # Set the cumulative displacement & angle
-        self.displacement = [0, 0, 0]
-        self.attitude = [1, 0, 0, 0]
+        self.displacement = [0.0, 0.0, 0.0]
+        self.velocity = [0.0, 0.0, 0.0]
+        self.attitude = [0.0, 0.0, 0.0]
         
     def scan(self):
         print('Scan I2C bus...')
@@ -153,21 +154,24 @@ class MPU:
             curr_time = time.time()
             dt = curr_time - start_time
             start_time = curr_time
-            if dt < 0.05:
-                print("dt < 50 ms")
-                continue
+#             if dt < 0.05:
+#                 print("dt < 50 ms")
+#                 continue
             acc_list = self.read_acc()
             ang_v_list = self.read_ang_v()
             acc = np.array(acc_list)
             ang_v = np.array(ang_v_list)
-
+            
+            velocity = np.array(self.velocity)
             displacement = np.array(self.displacement)
-            displacement += acc * dt
+            velocity += acc * dt
+            displacement += velocity * dt
+            self.velocity = velocity.tolist()
             self.displacement = displacement.tolist()
             attitude = np.array(self.attitude)
             attitude += ang_v * dt
             self.attitude = attitude.tolist()
-            print(f"[d,a] = {self.displacement},{self.attitude}")
+            print([round(num,2) for num in self.displacement], [round(num,2) for num in self.attitude])
 
             sampling_period = 1 / Constants.SAMPLING_FREQUENCY
             time.sleep(max(0, sampling_period - dt))
