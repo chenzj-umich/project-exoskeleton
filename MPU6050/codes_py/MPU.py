@@ -151,28 +151,38 @@ class MPU:
             self.offset_acc = getattr(Constants, self.name_acc, None)
             self.offset_att = getattr(Constants, self.name_att, None)
             print("MPU has already been calibrated.")
-
+    
+    def get_acc(self):
+        return (np.array(self.read_acc()) - np.array(self.offset_acc)).tolist()
+    
+    def get_ang_v(self):
+        return (np.array(self.read_ang_v()) - np.array(self.offset_att)).tolist()
+    
     def set_init_transformation(self):
         start_time = time.time()
-        acc = np.array([0, 0, 0])
+        acc = np.array([0.0, 0.0, 0.0])
         sample_times = 10
         for i in range (1,sample_times+1):
             curr_time = time.time()
             dt = curr_time - start_time
             start_time = curr_time
-            if dt < 1 / (Constants.SAMPLING_FREQUENCY * 2):
-                time.sleep(1/Constants)
-                continue
+#             if dt < 1 / (Constants.SAMPLING_FREQUENCY * 2):
+#                 time.sleep(1/Constants.SAMPLING_FREQUENCY)
+#                 continue
 
-            acc_list = self.read_acc()
+            acc_list = self.get_acc()
             acc += np.array(acc_list)
             
             sampling_period = 1 / Constants.SAMPLING_FREQUENCY
             time.sleep(max(0, sampling_period - dt))
+            
         acc /= sample_times
-
-        self.transformation = np.dot(rotation_matrix('x', np.arccos(acc[2]/Constants.G)), self.transformation)
-        self.transformation = np.dot(rotation_matrix('z',-1 * np.arctan(acc[0]/acc[1])), self.transformation)
+        print(f"acc = {acc}")
+        
+        G = np.sqrt(acc[0]*acc[0] + acc[1]*acc[1] + acc[2]*acc[2])
+        
+        self.transformation = np.dot(rotation_matrix('x', [np.arccos(acc[2]/G), 0.0, 0.0]), self.transformation)
+        self.transformation = np.dot(rotation_matrix('z',[0.0, 0.0, -1 * np.arctan(acc[0]/acc[1])]), self.transformation)
 
         print(self.transformation)
 

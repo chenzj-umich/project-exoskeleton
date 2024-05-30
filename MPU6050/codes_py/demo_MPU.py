@@ -12,17 +12,21 @@ import numpy as np
 mpu1 = MPU(1, I2C_ADDR, 1)
 # import MPU6050.codes_py.constants as Constant
 
-print(mpu1.offset_acc)
+# print(mpu1.offset_acc)
 # print(mpu6050.read_acc(), mpu6050.read_ang_v())
 
 print("MPU calibration done\n")
 
+print(np.dot(mpu1.transformation, np.array([[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]])))
 
-# acc_threshold = 0.01
-# att_threshold = 0.01
+acc_threshold = 0.01
+att_threshold = 0.01
 
 # while True:
 #     time.sleep(50/1000)
+#     acc = mpu1.read_acc()
+#     acc = (np.array(mpu1.read_acc()) - np.array(mpu1.offset_acc)).tolist()
+#     print(acc)
 #     if mpu1.offset_acc is not None:
 #         acc = (np.array(mpu1.read_acc()) - np.array(mpu1.offset_acc)).tolist()
 #         att = (np.array(mpu1.read_ang_v()) - np.array(mpu1.offset_att)).tolist()
