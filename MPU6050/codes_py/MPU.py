@@ -186,34 +186,40 @@ class MPU:
 
         print(self.transformation)
 
-    def demo_get_displacement_attitude(self):
-        start_time = time.time()
-        while True:
-            curr_time = time.time()
-            dt = curr_time - start_time
-            start_time = curr_time
-#             if dt < 0.05:
-#                 print("dt < 50 ms")
-#                 continue
-            acc_list = self.read_acc()
-            ang_v_list = self.read_ang_v()
-            acc = np.array(acc_list)
-            ang_v = np.array(ang_v_list)
-            
-            velocity = np.array(self.velocity)
-            displacement = np.array(self.displacement)
-            velocity += acc * dt
-            displacement += velocity * dt
-            self.velocity = velocity.tolist()
-            self.displacement = displacement.tolist()
-            attitude = np.array(self.attitude)
-            attitude += ang_v * dt
-            self.attitude = attitude.tolist()
-            print([round(num,2) for num in self.displacement], [round(num,2) for num in self.attitude])
-
-            sampling_period = 1 / Constants.SAMPLING_FREQUENCY
-            time.sleep(max(0, sampling_period - dt))
-
     def update_transformation_matrix(self):
         curr_time = time.time()
         dt = curr_time - self.moment
+
+
+
+
+
+
+
+#     def demo_get_displacement_attitude(self):
+#         start_time = time.time()
+#         while True:
+#             curr_time = time.time()
+#             dt = curr_time - start_time
+#             start_time = curr_time
+# #             if dt < 0.05:
+# #                 print("dt < 50 ms")
+# #                 continue
+#             acc_list = self.read_acc()
+#             ang_v_list = self.read_ang_v()
+#             acc = np.array(acc_list)
+#             ang_v = np.array(ang_v_list)
+            
+#             velocity = np.array(self.velocity)
+#             displacement = np.array(self.displacement)
+#             velocity += acc * dt
+#             displacement += velocity * dt
+#             self.velocity = velocity.tolist()
+#             self.displacement = displacement.tolist()
+#             attitude = np.array(self.attitude)
+#             attitude += ang_v * dt
+#             self.attitude = attitude.tolist()
+#             print([round(num,2) for num in self.displacement], [round(num,2) for num in self.attitude])
+
+#             sampling_period = 1 / Constants.SAMPLING_FREQUENCY
+#             time.sleep(max(0, sampling_period - dt))
