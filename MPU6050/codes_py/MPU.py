@@ -14,7 +14,7 @@ from MPU6050.codes_py.constants import ACC_SENSITIVITY as ACC_S
 from MPU6050.codes_py.constants import GYRO_SENSITIVITY as GYRO_S
 # from utility import modify_constants
 
-# from math_algo import list_div, list_add, list_sub
+from math_algo import rotation_matrix
 
 class MPU:
     def __init__(self, i2c_bus: int, i2c_addr: int, id):
@@ -38,12 +38,16 @@ class MPU:
         self.name_att = "OFFSET_ATT_" + str(self.id)
         # Perform calibration if necessary
         self.calibrate()
-        # Set the attitude relative to world-fixed frame in a rotation matrix
-        self.att_mat = np.array([[0,0,0],[0,0,0],[0,0,0]])
+        # Set the displacement & attitude relative to world-fixed frame in a transformation matrix
+        self.transformation = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
         # Set the cumulative displacement & angle
-        self.displacement = [0.0, 0.0, 0.0]
-        self.velocity = [0.0, 0.0, 0.0]
-        self.attitude = [0.0, 0.0, 0.0]
+        # self.displacement = [0.0, 0.0, 0.0, 1]
+        self.velocity = np.array([0.0, 0.0, 0.0, 1])
+        # self.attitude = [0.0, 0.0, 0.0, 1]
+        # Set previous sample time
+        self.moment = time.time()
+        # Initialzie
+        self.set_init_transformation()
         
     def scan(self):
         print('Scan I2C bus...')
@@ -148,6 +152,30 @@ class MPU:
             self.offset_att = getattr(Constants, self.name_att, None)
             print("MPU has already been calibrated.")
 
+    def set_init_transformation(self):
+        start_time = time.time()
+        acc = np.array([0, 0, 0])
+        sample_times = 10
+        for i in range (1,sample_times+1):
+            curr_time = time.time()
+            dt = curr_time - start_time
+            start_time = curr_time
+            if dt < 1 / (Constants.SAMPLING_FREQUENCY * 2):
+                time.sleep(1/Constants)
+                continue
+
+            acc_list = self.read_acc()
+            acc += np.array(acc_list)
+            
+            sampling_period = 1 / Constants.SAMPLING_FREQUENCY
+            time.sleep(max(0, sampling_period - dt))
+        acc /= sample_times
+
+        self.transformation = np.dot(rotation_matrix('x', np.arccos(acc[2]/Constants.G)), self.transformation)
+        self.transformation = np.dot(rotation_matrix('z',-1 * np.arctan(acc[0]/acc[1])), self.transformation)
+
+        print(self.transformation)
+
     def demo_get_displacement_attitude(self):
         start_time = time.time()
         while True:
@@ -175,3 +203,7 @@ class MPU:
 
             sampling_period = 1 / Constants.SAMPLING_FREQUENCY
             time.sleep(max(0, sampling_period - dt))
+
+    def update_transformation_matrix(self):
+        curr_time = time.time()
+        dt = curr_time - self.moment
