@@ -17,8 +17,9 @@ mpu1 = MPU(1, I2C_ADDR, 1)
 
 print("MPU calibration done\n")
 
-# print(np.dot(mpu1.transformation, np.array([[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]])))
-print(np.dot(mpu1.transformation,np.array(mpu1.get_acc)))
+acc_B = mpu1.get_acc()
+print(acc_B)
+print(np.dot(mpu1.transformation, np.array([acc_B[0],acc_B[1],acc_B[2],1])))
 
 acc_threshold = 0.01
 att_threshold = 0.01
