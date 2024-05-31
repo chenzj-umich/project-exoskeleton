@@ -1,3 +1,5 @@
+import time
+
 def modify_constants(file_path, target_string, new_value):
   # Initialize a flag to check if the target string is found
   found = False
@@ -20,3 +22,10 @@ def modify_constants(file_path, target_string, new_value):
   # Write the changes back to the file
   with open(file_path, 'w') as file:
     file.writelines(lines)
+
+def get_dt(obj):
+  curr_time = time.time()
+  prev_time = obj.moment
+  dt = curr_time - prev_time
+  obj.moment = curr_time
+  return dt

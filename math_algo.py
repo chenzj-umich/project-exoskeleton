@@ -59,6 +59,10 @@ def rotation_matrix(axis, angle_radians):
     else:
         raise ValueError("Axis must be 'x', 'y', 'z', 'space', or 'body")
 
+# def translation matrix
+def translation_matrix(t):
+    return np.array([[1,0,0,t[0]],[0,1,0,t[1]],[0,0,1,t[2]],[0,0,0,1]])
+
 # def overriding operator for list
 def list_div(self, divisor):
     divided_numbers = [x / divisor for x in self]
@@ -108,3 +112,4 @@ class Quaternion:
             [2 * (q[1]*q[3] + q[2]*q[0]), 2 * (q[2]*q[3] + q[1]*q[0]), 1 - 2 * (q[1]*q[3] + q[2]*q[2]), 0],
             [0, 0, 0, 1]
         ]
+    

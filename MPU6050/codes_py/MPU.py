@@ -14,7 +14,7 @@ from MPU6050.codes_py.constants import ACC_SENSITIVITY as ACC_S
 from MPU6050.codes_py.constants import GYRO_SENSITIVITY as GYRO_S
 # from utility import modify_constants
 
-from math_algo import rotation_matrix
+from math_algo import rotation_matrix, translation_matrix
 
 class MPU:
     def __init__(self, i2c_bus: int, i2c_addr: int, id):
@@ -175,23 +175,38 @@ class MPU:
             
             sampling_period = 1 / Constants.SAMPLING_FREQUENCY
             time.sleep(max(0, sampling_period - dt))
-            
+        
+        self.moment = time.time()
         acc /= sample_times
-        print(f"acc = {acc}")
+        # print(f"acc = {acc}")
         
         G = np.sqrt(acc[0]*acc[0] + acc[1]*acc[1] + acc[2]*acc[2])
         
         self.transformation = np.dot(rotation_matrix('x', [np.arccos(acc[2]/G), 0.0, 0.0]), self.transformation)
         self.transformation = np.dot(rotation_matrix('z',[0.0, 0.0, -1 * np.arctan(acc[0]/acc[1])]), self.transformation)
+        self.transformation = np.linalg.inv(self.transformation)
 
-        print(self.transformation)
+        # print(self.transformation)
 
     def update_transformation_matrix(self):
+        # update the current time
         curr_time = time.time()
         dt = curr_time - self.moment
 
+        # get calibrated acceleration and angular velocity
+        acc = np.array(self.get_acc())
+        ang_v = np.array(self.get_ang_v())
+        
+        # update the transformation matrix with rotation
+        att = ang_v * dt
+        self.transformation *= rotation_matrix('body',att)
 
+        # calculate the gravity casted on the body frame
+        g_in_B = np.dot(self.transformation, np.array([0,0,1,1]))
+        acc -= g_in_B
 
+        # update the transformation matrix with translation
+        
 
 
 
