@@ -43,7 +43,7 @@ class MPU:
         # Set the cumulative displacement & angle
         # self.displacement = [0.0, 0.0, 0.0, 1]
         self.velocity = np.array([0.0, 0.0, 0.0, 1])
-        # self.attitude = [0.0, 0.0, 0.0, 1]
+        self.attitude = [0.0, 0.0, 0.0]
         # Set previous sample time
         self.moment = time.time()
         # Initialzie
@@ -182,33 +182,45 @@ class MPU:
         
         G = np.sqrt(acc[0]*acc[0] + acc[1]*acc[1] + acc[2]*acc[2])
         
-        self.transformation = np.dot(rotation_matrix('x', [np.arccos(acc[2]/G), 0.0, 0.0]), self.transformation)
-        self.transformation = np.dot(rotation_matrix('z',[0.0, 0.0, -1 * np.arctan(acc[0]/acc[1])]), self.transformation)
-        self.transformation = np.linalg.inv(self.transformation)
+        self.transformation = np.dot(rotation_matrix('x', [np.arccos(acc[2]/G)-np.pi, 0.0, 0.0]), self.transformation)
+        self.transformation = np.dot(rotation_matrix('z',[0.0, 0.0, np.arctan(acc[1]/acc[0])+np.pi/2]), self.transformation)
+#         self.transformation = np.linalg.inv(self.transformation)
 
-        # print(self.transformation)
+        print(self.transformation)
+        print(np.dot(self.transformation, np.array([acc[0],acc[1],acc[2],1])))
 
     def update_transformation_matrix(self):
         # update the current time
         curr_time = time.time()
         dt = curr_time - self.moment
+        self.moment = curr_time
+#         print(f"dt = {dt}")
 
         # get calibrated acceleration and angular velocity
         acc = np.array(self.get_acc())
         ang_v = np.array(self.get_ang_v())
+        print(np.round(ang_v,2))
         
         # update the transformation matrix with rotation
         att = ang_v * dt
-        self.transformation *= rotation_matrix('body',att)
+        self.transformation = np.dot(rotation_matrix('body',att), self.transformation)
 
         # calculate the gravity casted on the body frame
         g_in_B = np.dot(self.transformation, np.array([0,0,1,1]))
-        acc -= g_in_B
+        acc[0] -= g_in_B[0]
+        acc[1] -= g_in_B[1]
+        acc[2] -= g_in_B[2]
+        
+        self.attitude += att
+        print(self.attitude)
+        
 
         # update the transformation matrix with translation
         
-
-
+#         print(np.dot(self.transformation, np.array([0,0,1,1]))[2])
+        print(np.round(self.transformation,2))
+#         print(acc)
+        time.sleep(1/Constants.SAMPLING_FREQUENCY)
 
 
 #     def demo_get_displacement_attitude(self):

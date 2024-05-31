@@ -17,9 +17,14 @@ mpu1 = MPU(1, I2C_ADDR, 1)
 
 print("MPU calibration done\n")
 
-# acc_B = mpu1.get_acc()
-# print(acc_B)
-# print(np.dot(mpu1.transformation, np.array([acc_B[0],acc_B[1],acc_B[2],1])))
+# while True:
+#     mpu1.update_transformation_matrix()
+#     acc_B = mpu1.get_acc()
+#     print(acc_B)
+# #     print(np.dot(mpu1.transformation, np.array([acc_B[0],acc_B[1],acc_B[2],1])))
+#     print(mpu1.transformation)
+#     time.sleep(0.1)
+
 
 # acc_threshold = 0.01
 # att_threshold = 0.01
@@ -46,4 +51,4 @@ print("MPU calibration done\n")
 
 # mpu1.demo_get_displacement_attitude()
 
-mpu1.update_transformation_matrix()
+# mpu1.update_transformation_matrix()
